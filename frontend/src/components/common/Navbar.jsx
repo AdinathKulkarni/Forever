@@ -1,40 +1,59 @@
-import { useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import {assets} from '../../assets/frontend_assets/assets'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { ShopContext } from '../../context/ShopContext';
 
 const Navbar = () => {
 
     const [ visible, setVisible ] = useState(false);
+    const {showSearch, setShowSearch} = useContext(ShopContext);
+    const location = useLocation();
+
+    useEffect( () => {
+        if(location.pathname.includes('collection')){
+            setShowSearch(true);
+        }
+        else{
+            setShowSearch(false)
+        }
+    },[location] );
 
   return (
     <div className='flex items-center justify-between py-5 font-medium'>
-        <NavLink to={"/"}>
+        <Link to={"/"}>
             <img src={assets.logo} className='w-36' />
-        </NavLink>
+        </Link>
         <ul className='hidden sm:flex text-gray-700 gap-7'>
             <NavLink to={'/'} className='flex flex-col items-center'>
                 <p>Home</p>
-                <hr className='w-2/3 h-[1.5px] bg-gray-700 hidden' />
+                <hr className='w-2/3 h-[2px] bg-gray-800 hidden' />
             </NavLink>
 
             <NavLink to={'/collection'} className='flex flex-col items-center'>
                 <p>Collection</p>
-                <hr className='w-2/3 h-[1.5px] bg-gray-700 hidden' />
+                <hr className='w-2/3  h-[2px] bg-gray-800 hidden' />
             </NavLink>
 
             <NavLink to={'/about'} className='flex flex-col items-center' >
                 <p>About</p>
-                <hr className='w-2/3 h-[1.5px] bg-gray-700 hidden' />
+                <hr className='w-2/3  h-[2px] bg-gray-800 hidden' />
             </NavLink>
 
             <NavLink to={'/contact'} className='flex flex-col items-center' >
                 <p>Contact</p>
-                <hr className='w-2/3 h-[1.5px] bg-gray-700 hidden' />
+                <hr className='w-2/3  h-[2px] bg-gray-800 hidden' />
             </NavLink>
         </ul>
 
         <div className='flex items-center gap-6'>
-            <img src={assets.search_icon} className='w-5 cursor-pointer' />
+            
+            <Link to={'/collection'}>
+                <img 
+                src={assets.search_icon} 
+                className='w-5 cursor-pointer' 
+                onClick={() => {setShowSearch(!showSearch)}}
+                />
+            </Link>
 
             <div className='relative group'>
                 <img src={assets.profile_icon} className='w-5 cursor-pointer' />
@@ -72,7 +91,7 @@ const Navbar = () => {
                         onClick={()=>setVisible(false)}  
                         className='flex flex-col items-center'>
                             <p>Home</p>
-                            <hr className='w-2/3 h-[1.5px] bg-gray-800 hidden gap-1' />
+                            {/* <hr className='w-2/3 h-[1.5px] bg-gray-800 hidden gap-1' /> */}
                         </NavLink>
 
                         <NavLink 
@@ -80,7 +99,7 @@ const Navbar = () => {
                         onClick={()=>setVisible(false)}
                         className='flex flex-col items-center gap-1'>
                             <p>Collection</p>
-                            <hr className='w-2/3 h-[1.5px] bg-gray-800 hidden' />
+                            {/* <hr className='w-2/3 h-[1.5px] bg-gray-800 hidden' /> */}
                         </NavLink>
 
                         <NavLink 
@@ -88,7 +107,7 @@ const Navbar = () => {
                         onClick={()=>setVisible(false)}
                         className='flex flex-col items-center gap-1' >
                             <p>About</p>
-                            <hr className='w-2/3 h-[1.5px] bg-gray-800 hidden' />
+                            {/* <hr className='w-2/3 h-[1.5px] bg-gray-800 hidden' /> */}
                         </NavLink>
 
                         <NavLink 
@@ -96,7 +115,7 @@ const Navbar = () => {
                         onClick={()=>setVisible(false)}
                         className='flex flex-col items-center gap-1' >
                             <p>Contact</p>
-                            <hr className='w-2/3 h-[1.5px] bg-gray-800 hidden' />
+                            {/* <hr className='w-2/3 h-[1.5px] bg-gray-800 hidden' /> */}
                         </NavLink>
                     </div>
 
