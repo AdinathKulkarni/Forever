@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
+import { ToastContainer, toast } from 'react-toastify';
 import { useParams } from 'react-router-dom'
 import { ShopContext } from '../context/ShopContext';
 import { assets } from '../assets/frontend_assets/assets';
@@ -7,11 +8,13 @@ import RelatedProducts from '../components/RelatedProducts';
 const Product = () => {
 
   const {productId} = useParams();
-  const {products, currency} = useContext(ShopContext);
+  const {products, currency, addToCart} = useContext(ShopContext);
   const [productData, setProductData] = useState(null);
   const [image, setImage] = useState('');
   const [size, setSize] = useState('');
   // console.log(productId);
+
+  
 
   useEffect( () => {
     const productData = products.find(item => item._id === productId);
@@ -74,7 +77,13 @@ const Product = () => {
                   </div>
                 </div>
 
-                <button className='bg-black text-white font-medium px-8 py-4 mt-8 active:bg-slate-900'>Add to Cart</button>
+                <button 
+                onClick={() => {addToCart(productData._id, size)}}
+                className='bg-black text-white font-medium px-8 py-4 
+                mt-8 active:bg-slate-900'
+                >
+                  Add to Cart
+                </button>
                 <hr className='h-[1.5px] mt-8 bg-slate-600' />
 
                 <div className='mt-2 text-[#555555] text-[16px]'>
