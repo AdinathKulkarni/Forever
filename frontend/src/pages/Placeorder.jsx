@@ -1,16 +1,43 @@
-import React, { useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 import Title from '../components/Title'
 import CartTotal from '../components/CartTotal'
 import { ShopContext } from '../context/ShopContext'
 import { assets } from '../assets/frontend_assets/assets'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 const Placeorder = () => {
 
-  const {currency, subtotal, deliveryFee} = useContext(ShopContext);
+  const {currency, subtotal, deliveryFee, cartData, setCartItems} = useContext(ShopContext);
   const [method, setMethod] = useState('Cash on Delivery')
 
   const navigate = useNavigate();
+
+  const placeOrder = () => {
+    if (cartData.length === 0) return
+
+    const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]')
+    const order = {
+      id: `QCS-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      status: 'Order placed',
+      paymentMethod: method,
+      items: cartData.map((item) => ({
+        productId: item._id,
+        name: item.name,
+        image: item.image[0],
+        price: item.price,
+        size: item.size,
+        quantity: item.quantity,
+      })),
+      subtotal,
+      deliveryFee,
+      total: subtotal + deliveryFee,
+    }
+
+    localStorage.setItem('orders', JSON.stringify([order, ...savedOrders]))
+    setCartItems({})
+    navigate('/orders')
+  }
 
   return (
     <div className='flex flex-col sm:flex-row justify-between gap-4 pt-5 sm:pt-14 min-h-[80vh] border-t'>
@@ -141,8 +168,14 @@ const Placeorder = () => {
 
           </div>
 
-          <div className='mt-12 bg-black text-white text-center px-2 py-4 font-medium'>
-              <button onClick={() => navigate('/orders')}>Place Order</button>
+          <div className='mt-12 bg-black text-center px-2 py-4 font-medium'>
+              <button
+                onClick={placeOrder}
+                disabled={cartData.length === 0}
+                className='w-full text-white disabled:cursor-not-allowed disabled:opacity-50'
+              >
+                Place Order
+              </button>
           </div>
         </div>
 
