@@ -135,8 +135,6 @@ exports.adminLogin = async(req, res) => {
             });
         }
 
-        console.log("Recieved Object: ", recievedObject);
-
         if(email !== process.env.ADMIN_USER || password !== process.env.ADMIN_PWD){
             return res.status(400).json({
                 success: false,
@@ -147,6 +145,7 @@ exports.adminLogin = async(req, res) => {
         const token = jwt.sign(email+password, process.env.JWT_SECRET);
         return res.status(200).json({
             success: true,
+            message: "Admin login successful",
             token,
         })
 
