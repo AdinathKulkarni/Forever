@@ -122,3 +122,39 @@ exports.registerUser = async(req, res) => {
         })
     }
 }
+
+exports.adminLogin = async(req, res) => {
+    try{
+
+        const {email, password} = req.body;
+
+        if(!email || !password){
+            return res.status(404).json({
+                success: false,
+                message: "All fields are required",
+            });
+        }
+
+        console.log("Recieved Object: ", recievedObject);
+
+        if(email !== process.env.ADMIN_USER || password !== process.env.ADMIN_PWD){
+            return res.status(400).json({
+                success: false,
+                message: "Incorrect Admin email or password",
+            });
+        }
+
+        const token = jwt.sign(email+password, process.env.JWT_SECRET);
+        return res.status(200).json({
+            success: true,
+            token,
+        })
+
+    } catch(e){
+        return res.status(500).json({
+            success: false,
+            message: "Error occured while admin login",
+            error: e.message,
+        });
+    }
+}
