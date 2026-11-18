@@ -26,7 +26,7 @@ function App() {
           <Navbar setToken={setToken} />
           <div className='flex w-full'>
             <Sidebar />
-            <div>
+            <div className='min-w-0 flex-1'>
               <Routes>
                 <Route path='/add-products' element={<AddItems token={token} />} />
                 <Route path='/list-items' element={<ListItems token={token} />} />
