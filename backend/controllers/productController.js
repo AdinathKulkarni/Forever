@@ -4,12 +4,29 @@ const Product = require('../models/product');
 exports.addProduct = async(req, res) => {
     try{
 
-        const {name, description, price, category, subCategory, size, bestseller} = req.body;
+        const {name, description, price, category, subCategory, sizes, bestseller} = req.body;
 
-        if(!name || !description || !price || !category || !subCategory || !size || !bestseller){
+        if(!name || !description || !price || !category || !subCategory || !sizes || bestseller === undefined){
             return res.status(400).json({
                 success: false,
                 message: "All fields are required",
+            });
+        }
+
+        let parsedSizes;
+        try {
+            parsedSizes = JSON.parse(sizes);
+        } catch {
+            return res.status(400).json({
+                success: false,
+                message: "Sizes must be a valid JSON array",
+            });
+        }
+
+        if(!Array.isArray(parsedSizes) || parsedSizes.length === 0 || !parsedSizes.every((item) => typeof item === 'string')){
+            return res.status(400).json({
+                success: false,
+                message: "Select at least one valid product size",
             });
         }
 
@@ -19,6 +36,13 @@ exports.addProduct = async(req, res) => {
         const image4 = req.files?.image4?.[0];
 
         const images = [image1, image2, image3, image4].filter((item) => item !== undefined);
+
+        if(images.length === 0){
+            return res.status(400).json({
+                success: false,
+                message: "Upload at least one product image",
+            });
+        }
 
         const imageUrl = await Promise.all(
             images.map(async (item) => {
@@ -33,8 +57,8 @@ exports.addProduct = async(req, res) => {
             price,
             category,
             subCategory,
-            size: JSON.parse(size),
-            bestSeller: bestseller === 'true' ? true : false,
+            sizes: parsedSizes,
+            bestSeller: bestseller === 'true' || bestseller === true,
             image: imageUrl,
             date: Date.now(),
         } 
