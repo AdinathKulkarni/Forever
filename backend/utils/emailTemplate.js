@@ -56,6 +56,17 @@ exports.verificationOtp = (otp) => renderEmail({
     footer: 'If you didn’t request this code, you can safely ignore this email.',
 });
 
+exports.passwordResetOtp = (otp) => renderEmail({
+    preheader: 'Your Forever password reset code',
+    heading: 'Reset your password',
+    intro: 'Use the code below to verify your email and reset your Forever account password:',
+    content: `<div style="margin:0;padding:20px;text-align:center;background-color:#FFB5C0;border:1px solid #ffe1e5;border-radius:10px;">
+        <span style="font-size:32px;font-weight:700;letter-spacing:10px;color:#161d29;">${escapeHtml(otp)}</span>
+    </div>
+    <p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#6b7280;">This code expires in 5 minutes. For your security, don’t share it with anyone.</p>`,
+    footer: 'If you didn’t request a password reset, you can safely ignore this email.',
+});
+
 exports.orderConfirmation = ({
     customerName = 'there',
     orderNumber,
