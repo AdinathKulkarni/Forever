@@ -1,0 +1,28 @@
+const nodemailer = require('nodemailer');
+
+const mailSender = async(email, title, body, options = {}) => {
+    try{
+        let transporter = nodemailer.createTransport({
+            host: process.env.MAIL_HOST,
+            auth: {
+                user: process.env.MAIL_USER,
+                pass: process.env.MAIL_PWD,
+            }
+        });
+
+        let info = await transporter.sendMail({
+            from: process.env.MAIL_USER,
+            to: `${email}`,
+            subject: `${title}`,
+            html: `${body}`,
+            ...(options.replyTo ? {replyTo: options.replyTo} : {}),
+        });
+
+        return info;
+    } catch(e){
+        console.log(`Failed to send email to ${email}`);
+        throw e;
+    }
+}
+
+module.exports = mailSender;
