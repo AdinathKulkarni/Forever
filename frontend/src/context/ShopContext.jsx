@@ -1,6 +1,5 @@
-import React, { Children, createContext, useEffect, useState, useMemo } from 'react'
+import { createContext, useEffect, useState, useMemo } from 'react'
 import { toast } from 'react-toastify';
-import { products } from '../assets/frontend_assets/assets';
 
 export const ShopContext = createContext();
 
@@ -9,12 +8,42 @@ const ShopContextProvider = ({children}) => {
     // Cart Logic
     const currency = '₹'
     const deliveryFee = 10;
+    const [products, setProducts] = useState([]);
+    const [productsLoading, setProductsLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [showSearch, setShowSearch] = useState(true);
     const [cartItems, setCartItems] = useState(() => {
         const savedCart = localStorage.getItem("cartItems");
         return savedCart ? JSON.parse(savedCart) : {};
     });
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const fetchProducts = async () => {
+            try {
+                const response = await fetch('http://localhost:4000/api/product/get-all');
+                const result = await response.json();
+
+                if (!response.ok || !result.success || !Array.isArray(result.products)) {
+                    throw new Error(result.message || 'Unable to load products');
+                }
+
+                if (!cancelled) setProducts(result.products);
+            } catch (error) {
+                console.error('Failed to fetch products:', error);
+                if (!cancelled) toast.error('Unable to load products');
+            } finally {
+                if (!cancelled) setProductsLoading(false);
+            }
+        };
+
+        fetchProducts();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     const productMap = useMemo(() => {
             return new Map(products.map((product) => [product._id, product]));
@@ -98,7 +127,7 @@ const ShopContextProvider = ({children}) => {
    
 
     const value = {
-        currency, products, deliveryFee,
+        currency, products, productsLoading, deliveryFee,
         search, setSearch, showSearch, setShowSearch,
         addToCart, cartItems, setCartItems, subtotal, cartData,
         updateQuantity, productMap,

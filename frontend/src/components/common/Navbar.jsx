@@ -2,12 +2,20 @@ import { useContext, useEffect, useState } from 'react'
 import {assets} from '../../assets/frontend_assets/assets'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { ShopContext } from '../../context/ShopContext';
+import { AuthContext } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
 
     const [ visible, setVisible ] = useState(false);
     const {showSearch, setShowSearch, cartItems} = useContext(ShopContext);
+    const {loginToken, setLoginToken} = useContext(AuthContext);
     const location = useLocation();
+
+    const handleLogout = () => {
+        setLoginToken('');
+        toast.success('Logout successful !!');
+    }
 
     useEffect( () => {
         if(location.pathname.includes('collection')){
@@ -16,7 +24,7 @@ const Navbar = () => {
         else{
             setShowSearch(false)
         }
-    },[location] );
+    },[location]);
 
   return (
     <div className='flex items-center justify-between py-5 font-medium'>
@@ -61,7 +69,7 @@ const Navbar = () => {
                     <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500'>
                         <p className='cursor-pointer hover:text-black'>My Profile</p>
                         <Link to='/orders' className='cursor-pointer hover:text-black'>Orders</Link>
-                        <p className='cursor-pointer hover:text-black'>Logout</p>
+                        <p onClick={handleLogout} className='cursor-pointer hover:text-black'>Logout</p>
                     </div>
                 </div>
             </div>

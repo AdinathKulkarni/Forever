@@ -14,8 +14,6 @@ const Product = () => {
   const [size, setSize] = useState('');
   // console.log(productId);
 
-  
-
   useEffect( () => {
     const productData = products.find(item => item._id === productId);
     setProductData(productData)

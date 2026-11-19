@@ -30,7 +30,7 @@ const Newsletter = () => {
             />
 
             <button 
-            className='bg-black text-white py-4 px-2 sm:w-1/5 w-2/3'
+            className='bg-black text-white py-4 px-2 sm:w-2/6 w-2/3'
             onSubmit={subscribeHandler}
             >
                 Subscribe
