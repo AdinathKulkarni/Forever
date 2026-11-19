@@ -4,7 +4,6 @@ import CartTotal from '../components/CartTotal'
 import { ShopContext } from '../context/ShopContext'
 import { assets } from '../assets/frontend_assets/assets'
 import { useNavigate } from 'react-router-dom'
-import { mailSender } 
 
 const Placeorder = () => {
 
@@ -38,9 +37,6 @@ const Placeorder = () => {
     localStorage.setItem('orders', JSON.stringify([order, ...savedOrders]))
     setCartItems({})
     navigate('/orders')
-
-     
-
   }
 
   return (
