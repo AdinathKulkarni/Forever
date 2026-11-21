@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { assets } from '../../assets/admin_assets/assets'
 import {Link} from 'react-router'
 
@@ -12,8 +13,11 @@ const Navbar = ({setToken}) => {
             />
         </Link>
         <button
-        onClick={() => setToken('')}
-        className='bg-gray-600 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-full'
+        onClick={() => {
+          setToken('');
+          toast.success('Logout successful');
+        }}
+        className='bg-gray-800 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-full'
         >Logout</button>
     </div>
   )

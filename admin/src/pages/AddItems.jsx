@@ -3,6 +3,7 @@ import axios from 'axios'
 import { assets } from '../assets/admin_assets/assets'
 import toast from 'react-hot-toast'
 import '../index.css'
+import { BACKEND_URL } from '../api'
 
 const AddItems = ({ token }) => {
 
@@ -78,7 +79,7 @@ const AddItems = ({ token }) => {
     try {
       setLoading(true);
       const response = await axios.post(
-        'http://localhost:4000/api/product/add-product',
+        `${BACKEND_URL}/api/product/add-product`,
         formData,
         { headers: { token } }
       )

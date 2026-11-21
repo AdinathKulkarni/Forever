@@ -2,19 +2,18 @@ import { useEffect, useState } from 'react'
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router';
+import { BACKEND_URL } from '../api'
 
 const ListItems = ({token}) => {
 
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  console.log("List: " ,list);
 
   const fetchList = async() => {
     try{
       setLoading(true);
-      const response = await axios.get('http://localhost:4000/api/product/get-all')
-      console.log(response.data);
+      const response = await axios.get(`${BACKEND_URL}/api/product/get-all`)
 
       if(response.data.success){
       setList(response.data.products);
@@ -25,9 +24,7 @@ const ListItems = ({token}) => {
       }
 
     } catch(e){
-      console.log("Error while fetching all the products");
       toast.error('Error while fetching all the products')
-      console.log(e.message);
     } finally{
       setLoading(false);
     }
@@ -37,7 +34,7 @@ const ListItems = ({token}) => {
     try{
 
       setLoading(true);
-      const response = await axios.delete('http://localhost:4000/api/product/remove', 
+      const response = await axios.delete(`${BACKEND_URL}/api/product/remove`,
         //wrap inside single object and then send it. axios ignores third parameter is sent independently
       {
         headers: {token: token},
@@ -56,7 +53,6 @@ const ListItems = ({token}) => {
       }
 
     } catch(e){
-      console.log("Error while deleting the product");
       console.log(e.message);
       toast.error('Error while deleting the product');
     }
@@ -131,7 +127,7 @@ const ListItems = ({token}) => {
                 ( <div className='mx-auto flex min-h-[60vh] w-full flex-col 
                 justify-center gap-4 text-center  md:w-[70%]'>
                   <p className='font-medium text-xl'>No Products to display</p>
-                  <Link to={'/add-products'} className='text-white bg-black px-4 py-3'>
+                  <Link to={'/'} className='text-white bg-black px-4 py-3'>
                       <p>Add a product</p>
                   </Link> 
                 </div> )

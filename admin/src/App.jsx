@@ -28,7 +28,7 @@ function App() {
             <Sidebar />
             <div className='min-w-0 flex-1'>
               <Routes>
-                <Route path='/add-products' element={<AddItems token={token} />} />
+                <Route path='/' element={<AddItems token={token} />} />
                 <Route path='/list-items' element={<ListItems token={token} />} />
                 <Route path='/orders' element={<Orders token={token} />} />
               </Routes>

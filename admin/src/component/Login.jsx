@@ -3,6 +3,7 @@ import axios from 'axios'
 import '../index.css'
 import { assets } from '../assets/admin_assets/assets'
 import toast from 'react-hot-toast'
+import { BACKEND_URL } from '../api'
 
 const Login = ({setToken}) => {
 
@@ -22,17 +23,13 @@ const Login = ({setToken}) => {
   const submitHandler = async(e) => {
     e.preventDefault();
     try{
-      const backendURL = 'http://localhost:4000';
-
       const response = await axios.post(
-        `${backendURL}/api/user/admin`,
+        `${BACKEND_URL}/api/user/admin`,
         {
           email: adminLoginFormdata.email,
           password: adminLoginFormdata.password,
         }
       );
-
-      console.log(response);
 
       if(response.data.success){
         setToken(response.data.token)
