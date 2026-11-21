@@ -7,6 +7,7 @@ const { cloudinaryConnect } = require('./config/cloudinary');
 const userRouter = require('./routes/userRoutes')
 const productRouter = require('./routes/productRoutes');
 const cartRouter = require('./routes/cartRoute');
+const orderRouter = require('./routes/orderRoute');
 
 //app config
 const PORT = process.env.PORT || 4000;
@@ -20,6 +21,7 @@ app.use(cors());
 app.use('/api/user', userRouter);
 app.use('/api/product', productRouter);
 app.use('/api/cart', cartRouter);
+app.use('/api/order', orderRouter)
 
 //External services connection
 mongoDb.connectDb();
