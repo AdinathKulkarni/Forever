@@ -12,9 +12,7 @@ const Footer = () => {
                 </Link>
                 
                 <p className='text-[18px] text-[#595959]'>
-                    Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-                    Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
-                    when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+                    Forever makes everyday shopping simple with thoughtfully selected products, dependable service, and a smooth experience from checkout to delivery.
                 </p>
             </div>
 

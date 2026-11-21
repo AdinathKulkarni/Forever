@@ -75,7 +75,7 @@ const About = () => {
       </div>
 
       <div className='mt-12'>
-        <Newsletter />
+        <Newsletter message='Stay connected with Forever and follow the ideas, products, and values shaping our store.' />
       </div>
     </div>
   )

@@ -166,7 +166,7 @@ const Signup = () => {
       </div>
 
       <div className='mt-20'>
-        <Newsletter />
+        <Newsletter message='Join Forever today and receive updates on new arrivals, member offers, and collection launches.' />
       </div>
     </form>
   )

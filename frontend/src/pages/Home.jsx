@@ -13,7 +13,7 @@ const Home = () => {
       <LatestCollection />
       <BestSeller />
       <OurPolicy />
-      <Newsletter />
+      <Newsletter message='Be the first to hear about new collections, seasonal edits, and special offers from Forever.' />
     </div>
   )
 }

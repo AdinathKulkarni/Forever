@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const Newsletter = () => {
+const Newsletter = ({ message = 'Join the Forever community for product updates, styling ideas, and exclusive offers.' }) => {
 
     const [newsLetterEmail, setNewsLetterEmail] = useState('');
 
@@ -17,7 +17,7 @@ const Newsletter = () => {
     <div className='flex flex-col mb-10 items-center'>
         <div className='flex flex-col mb-4 items-center'>
             <h2 className='text-[28px] font-medium mb-4'>Subscribe now & get 20% off</h2>
-            <p className='text-[16px] text-[#9A9A9A] text-center'>Lorem Ipsum is simply dummy text of the printing and typesetting industry. </p>
+            <p className='text-[16px] text-[#9A9A9A] text-center'>{message}</p>
         </div>
 
         <div className='flex sm:w-4/5 w-full'>

@@ -51,7 +51,7 @@ const Contact = () => {
       </div>
 
       <div className='mt-12'>
-        <Newsletter />
+        <Newsletter message='Keep in touch with Forever for store news, service updates, and helpful shopping information.' />
       </div>
     </div>
   )

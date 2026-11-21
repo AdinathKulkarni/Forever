@@ -85,7 +85,7 @@ const Login = () => {
       </div>
 
       <div className='mt-20'>
-        <Newsletter />
+        <Newsletter message='Create your Forever account to keep your orders, cart, and shopping preferences together.' />
       </div>
     </form>
   )
