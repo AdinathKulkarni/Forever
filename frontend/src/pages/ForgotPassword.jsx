@@ -3,6 +3,7 @@ import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import Title from '../components/Title'
 import { useNavigate } from 'react-router-dom'
+import { BACKEND_URL } from '../api'
 
 const ForgotPassword = () => {
 
@@ -14,7 +15,7 @@ const ForgotPassword = () => {
         event.preventDefault();
         try {
             setSending(true);
-            const response = await axios.post('http://localhost:4000/api/user/forgot-password/send-otp', { email });
+            const response = await axios.post(`${BACKEND_URL}/api/user/forgot-password/send-otp`, { email });
             if (!response.data.success) {
                 toast.error(response.data.message || 'Unable to send a reset code');
                 return;

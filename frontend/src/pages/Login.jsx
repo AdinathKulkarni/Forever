@@ -1,13 +1,15 @@
 import { useContext, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Newsletter from '../components/Newsletter'
 import { toast } from 'react-hot-toast'
 import { AuthContext } from '../context/AuthContext'
+import { BACKEND_URL } from '../api'
 
 const Login = () => {
   const { setLoginToken } = useContext(AuthContext)
   const navigate = useNavigate()
+  const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -15,7 +17,7 @@ const Login = () => {
     event.preventDefault()
 
     try {
-      const response = await axios.post('http://localhost:4000/api/user/login', { email, password })
+      const response = await axios.post(`${BACKEND_URL}/api/user/login`, { email, password })
 
       if (!response.data.success) {
         toast.error(response.data.message || 'Unable to sign in')
@@ -29,7 +31,13 @@ const Login = () => {
 
       setLoginToken(response.data.token)
       toast.success(response.data.message || 'Login successful')
-      navigate('/', { replace: true })
+      const destination = location.state?.from
+      navigate(
+        destination
+          ? `${destination.pathname}${destination.search || ''}${destination.hash || ''}`
+          : '/',
+        { replace: true },
+      )
     } catch (error) {
       console.error('Authentication request failed:', error)
       toast.error(error.response?.data?.message || 'Something went wrong')
@@ -69,7 +77,7 @@ const Login = () => {
 
       <div className='w-full flex justify-between text-sm font-medium mt-[-8px]'>
         <Link to={'/forgot-password'} className='cursor-pointer'>Forgot your Password ?</Link>
-        <Link to='/signup' className='cursor-pointer'>Create an Account</Link>
+        <Link to='/signup' state={location.state} className='cursor-pointer'>Create an Account</Link>
       </div>
 
       <div className='bg-black text-white font-medium px-3 py-2'>

@@ -1,46 +1,175 @@
 import { useContext, useState } from 'react'
+import axios from 'axios'
 import Title from '../components/Title'
 import CartTotal from '../components/CartTotal'
 import { ShopContext } from '../context/ShopContext'
+import { AuthContext } from '../context/AuthContext'
 import { assets } from '../assets/frontend_assets/assets'
 import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import { BACKEND_URL } from '../api'
+
+const loadRazorpayScript = () => new Promise((resolve) => {
+  if (window.Razorpay) {
+    resolve(true)
+    return
+  }
+
+  const script = document.createElement('script')
+  script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+  script.onload = () => resolve(true)
+  script.onerror = () => resolve(false)
+  document.body.appendChild(script)
+})
 
 const Placeorder = () => {
-
-  const {currency, subtotal, deliveryFee, cartData, setCartItems} = useContext(ShopContext);
-  const [method, setMethod] = useState('Cash on Delivery')
-
+  
   const navigate = useNavigate();
+  const {currency, subtotal, deliveryFee, cartData, setCartItems} = useContext(ShopContext);
+  const {loginToken} = useContext(AuthContext);
+  const [method, setMethod] = useState('Cash on Delivery');
+  const [submitting, setSubmitting] = useState(false);
 
-  const placeOrder = () => {
-    if (cartData.length === 0) return
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    street: '',
+    state: '',
+    zipCode: '',
+    country: '',
+    phone: '',
+    city: '',
+  });
 
-    const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]')
-    const order = {
-      id: `QCS-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      status: 'Order placed',
-      paymentMethod: method,
-      items: cartData.map((item) => ({
+  const onChangeHandler = (e) => {
+    const {name, value} = e.target;
+
+    setFormData( (prev) => ({
+      ...prev, 
+      [name]: value,
+    }) );
+  }
+
+  const submitHandler = async(e) => {
+    e.preventDefault();
+    if (submitting) return;
+    if (cartData.length === 0) {
+      toast.error('Your cart is empty');
+      return;
+    }
+    if (!loginToken) {
+      toast.error('Please log in to place an order');
+      return;
+    }
+    let razorpayCheckoutOpened = false;
+    try {
+      setSubmitting(true);
+      const items = cartData.map((item) => ({
         productId: item._id,
-        name: item.name,
-        image: item.image[0],
-        price: item.price,
         size: item.size,
         quantity: item.quantity,
-      })),
-      subtotal,
-      deliveryFee,
-      total: subtotal + deliveryFee,
-    }
+      }));
+      const address = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+        country: formData.country,
+        phone: formData.phone,
+      };
 
-    localStorage.setItem('orders', JSON.stringify([order, ...savedOrders]))
-    setCartItems({})
-    navigate('/orders')
+      if (method === 'Razorpay') {
+        const scriptLoaded = await loadRazorpayScript()
+        if (!scriptLoaded) throw new Error('Unable to load Razorpay Checkout. Please try again.')
+
+        const response = await axios.post(
+          `${BACKEND_URL}/api/order/razorpay`,
+          { items, address },
+          { headers: { token: loginToken } },
+        )
+        if (!response.data.success || !response.data.orderId || !response.data.key) {
+          throw new Error(response.data.message || 'Unable to start Razorpay checkout')
+        }
+
+        const checkout = new window.Razorpay({
+          key: response.data.key,
+          order_id: response.data.orderId,
+          amount: response.data.amount,
+          currency: response.data.currency,
+          name: response.data.name,
+          description: response.data.description,
+          prefill: response.data.prefill,
+          handler: async (paymentDetails) => {
+            try {
+              const verification = await axios.post(
+                `${BACKEND_URL}/api/order/verify-razorpay`,
+                paymentDetails,
+                { headers: { token: loginToken } },
+              )
+              if (!verification.data.success) {
+                throw new Error(verification.data.message || 'Unable to verify payment')
+              }
+              setCartItems({})
+              toast.success(verification.data.message || 'Payment successful')
+              navigate('/orders')
+            } catch (error) {
+              console.error('Razorpay payment verification failed:', error.response?.data || error.message)
+              toast.error(error.response?.data?.message || error.message || 'Unable to verify payment')
+            } finally {
+              setSubmitting(false)
+            }
+          },
+          modal: {
+            ondismiss: () => setSubmitting(false),
+          },
+          theme: { color: '#161d29' },
+        })
+
+        checkout.on('payment.failed', (event) => {
+          toast.error(event.error?.description || 'Razorpay payment failed')
+          setSubmitting(false)
+        })
+        checkout.open()
+        razorpayCheckoutOpened = true
+        return
+      }
+
+      const response = await axios.post(
+        `${BACKEND_URL}/api/order/${method === 'Stripe' ? 'stripe' : 'place-order'}`,
+        { items, address },
+        { headers: { token: loginToken } },
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Unable to place order');
+      }
+
+      if (method === 'Stripe') {
+        if (!response.data.session_url) {
+          throw new Error('Stripe did not return a checkout URL');
+        }
+        window.location.assign(response.data.session_url);
+        return;
+      }
+
+      setCartItems({});
+      toast.success(response.data.message || 'Order placed successfully');
+      navigate('/orders');
+    } catch (error) {
+      console.error('Error while placing order:', error);
+      toast.error(error.response?.data?.message || error.message || 'Unable to place order');
+    } finally {
+      if (!razorpayCheckoutOpened) setSubmitting(false);
+    }
   }
 
   return (
-    <div className='flex flex-col sm:flex-row justify-between gap-4 pt-5 sm:pt-14 min-h-[80vh] border-t'>
+    <form onSubmit={submitHandler}
+    className='flex flex-col sm:flex-row justify-between gap-4 pt-5 sm:pt-14 min-h-[80vh] border-t'>
 
         {/* Form */}
 
@@ -54,18 +183,22 @@ const Placeorder = () => {
               placeholder='First name'
               className='border border-gray-400 px-2 py-4 focus:outline-none rounded-md w-full'
               required
-              // value={''}
+              value={formData.firstName}
               type='text'
               id='firstName'
+              name='firstName'
+              onChange={onChangeHandler}
               />
 
               <input 
               placeholder='Last name'
               className='border border-gray-400 px-2 py-4 focus:outline-none rounded-md w-full'
               required
-              // value={''}
+              value={formData.lastName}
               type='text'
               id='lastName'
+              name='lastName'
+              onChange={onChangeHandler}
               />
           </div>
 
@@ -73,18 +206,22 @@ const Placeorder = () => {
             placeholder='Email address'
             className='border border-gray-400 px-2 py-4 focus:outline-none rounded-md'
             required
-            // value={''}
+            value={formData.email}
             type='email'
             id='email'
+            name='email'
+            onChange={onChangeHandler}
           />
 
           <input 
             placeholder='Street'
             className='border border-gray-400 px-2 py-4 focus:outline-none rounded-md'
             required
-            // value={''}
+            value={formData.street}
             type='text'
             id='street'
+            name='street'
+            onChange={onChangeHandler}
           />
 
           <div className='flex gap-3'>
@@ -92,18 +229,22 @@ const Placeorder = () => {
               placeholder='City'
               className='border border-gray-400 px-2 py-4 focus:outline-none rounded-md w-full'
               required
-              // value={''}
+              value={formData.city}
               type='text'
               id='city'
+              name='city'
+              onChange={onChangeHandler}
               />
 
               <input 
               placeholder='State'
               className='border border-gray-400 px-2 py-4 focus:outline-none rounded-md w-full'
               required
-              // value={''}
+              value={formData.state}
               type='text'
               id='state'
+              name='state'
+              onChange={onChangeHandler}
               />
           </div>
 
@@ -112,18 +253,22 @@ const Placeorder = () => {
               placeholder='Zip Code'
               className='border border-gray-400 px-2 py-4 focus:outline-none rounded-md w-full'
               required
-              // value={''}
+              value={formData.zipCode}
               type='text'
               id='zipCode'
+              name='zipCode'
+              onChange={onChangeHandler}
               />
 
               <input 
               placeholder='Country'
               className='border border-gray-400 px-2 py-4 focus:outline-none rounded-md w-full'
               required
-              // value={''}
+              value={formData.country}
               type='text'
               id='country'
+              name='country'
+              onChange={onChangeHandler}
               />
           </div>
 
@@ -131,9 +276,11 @@ const Placeorder = () => {
             placeholder='Phone'
             className='border border-gray-400 px-2 py-4 focus:outline-none rounded-md'
             required
-            // value={''}
+            value={formData.phone}
             type='text'
             id='phone'
+            name='phone'
+            onChange={onChangeHandler}
           />
       </div>
 
@@ -170,17 +317,17 @@ const Placeorder = () => {
 
           <div className='mt-12 bg-black text-center px-2 py-4 font-medium'>
               <button
-                onClick={placeOrder}
-                disabled={cartData.length === 0}
+                type='submit'
+                disabled={cartData.length === 0 || submitting}
                 className='w-full text-white disabled:cursor-not-allowed disabled:opacity-50'
               >
-                Place Order
+                {submitting ? 'Placing Order...' : 'Place Order'}
               </button>
           </div>
         </div>
 
       </div>
-    </div>
+    </form>
   )
 }
 

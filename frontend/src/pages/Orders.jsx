@@ -1,7 +1,11 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
+import axios from 'axios'
 import { Link } from 'react-router-dom'
 import { ShopContext } from '../context/ShopContext'
+import { AuthContext } from '../context/AuthContext'
 import Title from '../components/Title'
+import toast from 'react-hot-toast'
+import { BACKEND_URL } from '../api'
 
 const formatOrderDate = (date) => new Intl.DateTimeFormat('en-IN', {
   year: 'numeric',
@@ -11,10 +15,39 @@ const formatOrderDate = (date) => new Intl.DateTimeFormat('en-IN', {
 
 const Orders = () => {
   const { currency } = useContext(ShopContext)
-  const [orders] = useState(() => {
-    const savedOrders = localStorage.getItem('orders')
-    return savedOrders ? JSON.parse(savedOrders) : []
-  })
+  const { loginToken } = useContext(AuthContext)
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchOrders = async () => {
+      try {
+        const response = await axios.post(
+          `${BACKEND_URL}/api/order/user-orders`,
+          {},
+          { headers: { token: loginToken } },
+        )
+
+        if (!response.data.success || !Array.isArray(response.data.orders)) {
+          throw new Error(response.data.message || 'Unable to load your orders')
+        }
+
+        if (!cancelled) setOrders(response.data.orders)
+      } catch (error) {
+        console.error('Unable to fetch orders:', error)
+        if (!cancelled) toast.error(error.response?.data?.message || 'Unable to load your orders')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    fetchOrders()
+    return () => {
+      cancelled = true
+    }
+  }, [loginToken])
 
   return (
     <main className="border-t pt-10 sm:pt-16">
@@ -22,7 +55,9 @@ const Orders = () => {
         <Title text1="My" text2=" Orders" />
       </div>
 
-      {orders.length === 0 ? (
+      {loading ? (
+        <p className="py-16 text-center text-gray-500">Loading orders...</p>
+      ) : orders.length === 0 ? (
         <section className="my-8 border border-gray-200 px-5 py-12 text-center sm:my-12 sm:px-8 sm:py-16">
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-gray-500" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7" stroke="currentColor" strokeWidth="1.5">
@@ -47,14 +82,14 @@ const Orders = () => {
             const itemCount = order.items.reduce((count, item) => count + item.quantity, 0)
 
             return (
-              <article key={order.id} className="border border-gray-200">
+              <article key={order._id} className="border border-gray-200">
                 <header className="flex flex-col gap-3 border-b border-gray-200 bg-gray-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                   <div className="min-w-0">
                     <p className="break-all text-sm font-medium text-gray-800">
-                      Order #{order.id}
+                      Order #{order._id}
                     </p>
                     <p className="mt-1 text-xs text-gray-500">
-                      Placed {formatOrderDate(order.createdAt)} · {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                      Placed {formatOrderDate(order.date)} · {itemCount} {itemCount === 1 ? 'item' : 'items'}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
@@ -63,7 +98,7 @@ const Orders = () => {
                       {order.status}
                     </span>
                     <span className="font-medium text-gray-800">
-                      {currency}{order.total}
+                      {currency}{order.amount}
                     </span>
                   </div>
                 </header>

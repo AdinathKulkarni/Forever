@@ -2,6 +2,7 @@ import { createContext, useEffect, useState, useMemo, useContext } from 'react'
 import { toast } from 'react-hot-toast'
 import { AuthContext } from './AuthContext';
 import axios from 'axios';
+import { BACKEND_URL } from '../api'
 
 export const ShopContext = createContext();
 
@@ -24,7 +25,7 @@ const ShopContextProvider = ({children}) => {
 
         const fetchProducts = async () => {
             try {
-                const response = await fetch('http://localhost:4000/api/product/get-all');
+                const response = await fetch(`${BACKEND_URL}/api/product/get-all`);
                 const result = await response.json();
 
                 if (!response.ok || !result.success || !Array.isArray(result.products)) {
@@ -68,7 +69,7 @@ const ShopContextProvider = ({children}) => {
             }
 
             try {
-                const response = await axios.get('http://localhost:4000/api/cart/get', {
+                const response = await axios.get(`${BACKEND_URL}/api/cart/get`, {
                     headers: { token: loginToken },
                 });
                 if (!response.data.success) {
@@ -130,7 +131,7 @@ const ShopContextProvider = ({children}) => {
 
         if(loginToken){
             try{
-                await axios.post('http://localhost:4000/api/cart/add-item', {
+                await axios.post(`${BACKEND_URL}/api/cart/add-item`, {
                     itemId,
                     size,
                 }, {
@@ -174,7 +175,7 @@ const ShopContextProvider = ({children}) => {
         });
 
         if (loginToken) {
-            axios.post('http://localhost:4000/api/cart/update-item', {
+            axios.post(`${BACKEND_URL}/api/cart/update-item`, {
                 itemId,
                 size,
                 quantity,

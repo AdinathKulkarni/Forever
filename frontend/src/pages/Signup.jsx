@@ -1,13 +1,15 @@
 import { useContext, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Newsletter from '../components/Newsletter'
 import { toast } from 'react-hot-toast'
 import { AuthContext } from '../context/AuthContext'
+import { BACKEND_URL } from '../api'
 
 const Signup = () => {
   const { setLoginToken } = useContext(AuthContext)
   const navigate = useNavigate()
+  const location = useLocation()
   const [formData, setFormData] = useState({ name: '', email: '', password: '' })
   const [otp, setOtp] = useState('')
   const [otpSent, setOtpSent] = useState(false)
@@ -31,7 +33,7 @@ const Signup = () => {
 
     try {
       setOtpSending(true)
-      const response = await axios.post('http://localhost:4000/api/user/send-otp', { email: formData.email })
+      const response = await axios.post(`${BACKEND_URL}/api/user/send-otp`, { email: formData.email })
 
       if (!response.data.success) {
         toast.error(response.data.message || 'Unable to send verification code')
@@ -57,7 +59,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:4000/api/user/register', {
+      const response = await axios.post(`${BACKEND_URL}/api/user/register`, {
         name: formData.name,
         email: formData.email,
         password: formData.password,
@@ -76,7 +78,13 @@ const Signup = () => {
 
       setLoginToken(response.data.token)
       toast.success(response.data.message || 'Account created')
-      navigate('/', { replace: true })
+      const destination = location.state?.from
+      navigate(
+        destination
+          ? `${destination.pathname}${destination.search || ''}${destination.hash || ''}`
+          : '/',
+        { replace: true },
+      )
     } catch (error) {
       console.error('Authentication request failed:', error)
       toast.error(error.response?.data?.message || 'Something went wrong')
@@ -150,7 +158,7 @@ const Signup = () => {
       />
 
       <div className='w-full flex justify-end text-sm font-medium mt-[-8px]'>
-        <Link to='/login' className='cursor-pointer'>Already a user ? Login</Link>
+        <Link to='/login' state={location.state} className='cursor-pointer'>Already a user ? Login</Link>
       </div>
 
       <div className='bg-black text-white font-medium px-3 py-2'>

@@ -3,6 +3,7 @@ import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Title from '../components/Title';
+import { BACKEND_URL } from '../api'
 
 const VerifyOTP = () => {
 
@@ -18,7 +19,7 @@ const VerifyOTP = () => {
     const resendHandler = async () => {
         try {
             setSubmitting(true);
-            const response = await axios.post('http://localhost:4000/api/user/forgot-password/send-otp', { email });
+            const response = await axios.post(`${BACKEND_URL}/api/user/forgot-password/send-otp`, { email });
             if (!response.data.success) {
                 toast.error(response.data.message || 'Unable to send a new code');
                 return;
@@ -36,7 +37,7 @@ const VerifyOTP = () => {
         event.preventDefault();
         try {
             setSubmitting(true);
-            const response = await axios.post('http://localhost:4000/api/user/forgot-password/verify-otp', { email, otp });
+            const response = await axios.post(`${BACKEND_URL}/api/user/forgot-password/verify-otp`, { email, otp });
             if (!response.data.success) {
                 toast.error(response.data.message || 'Unable to verify code');
                 return;
@@ -58,7 +59,7 @@ const VerifyOTP = () => {
         }
         try {
             setSubmitting(true);
-            const response = await axios.post('http://localhost:4000/api/user/forgot-password/reset', { resetToken, password });
+            const response = await axios.post(`${BACKEND_URL}/api/user/forgot-password/reset`, { resetToken, password });
             if (!response.data.success) {
                 toast.error(response.data.message || 'Unable to update password');
                 return;
