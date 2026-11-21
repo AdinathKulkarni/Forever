@@ -266,10 +266,10 @@ exports.sendOTP = async(req, res) => {
         });
 
     } catch(e){
+        console.error('Error while sending OTP:', e.message);
         return res.status(500).json({
             success: false,
             message: "Error while sending OTP",
-            error: e.message,
         })
     }
 }
